@@ -20,7 +20,7 @@ const WebSocketServer = require("ws").WebSocketServer;
 let wsCopy = null;
 let symbol = null;
 console.log("is process.env.WEBSOCKET_PORT : ", process.env.WEBSOCKET_PORT);
-const websocketPort = process.env.WEBSOCKET_PORT
+const websocketPort = process.env.PORT
 const socketServer = new WebSocketServer({
   port: websocketPort,
 });
