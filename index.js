@@ -44,7 +44,7 @@ socketServer.on("connection", (ws) => {
         method: "subscribe",
         subscription: { type: "l2Book", coin: symbol },
       };
-      wsHyperlink.send(JSON.stringify(event));
+      // wsHyperlink.send(JSON.stringify(event));
       appendSubscribedEvents(1, { site: "hyper", event });
     }
     if (isAssetsExist(aevoAssets, symbol)) {
@@ -70,7 +70,7 @@ socketServer.on("connection", (ws) => {
 });
 
 const wsAevo = new WebSocket("wss://ws.aevo.xyz");
-const wsHyperlink = new WebSocket("wss://api.hyperliquid.xyz/ws");
+// const wsHyperlink = new WebSocket("wss://api.hyperliquid.xyz/ws");
 const wsDrift = new WebSocket("wss://dlob.drift.trade/ws");
 let wsAevoLastData = null;
 let wsHyperlinkLastData = null;
@@ -84,11 +84,11 @@ const resetAllData = () => {
 const app = express();
 app.use(cors());
 wsAevo.on("error", (err) => socketError("wsAevo", err));
-wsHyperlink.on("error", (err) => socketError("wsHyperlink", err));
+// wsHyperlink.on("error", (err) => socketError("wsHyperlink", err));
 wsDrift.on("error", (err) => socketError("wsHyperlink", err));
-wsHyperlink.on("open", function open() {
-  console.log("connection openned for wsHyperlink ");
-});
+// wsHyperlink.on("open", function open() {
+//   console.log("connection openned for wsHyperlink ");
+// });
 wsDrift.on("open", function open() {
   console.log("connection openned for wsDrift ");
 });
@@ -114,26 +114,26 @@ wsDrift.on("message", function message(data) {
     );
   }
 });
-wsHyperlink.on("message", function message(data) {
-  const parseData = JSON.parse(data);
-  const { high, low, time } = calculateHyperLinkLeverage(parseData);
-  const obj = {
-    high,
-    low,
-    time,
-    dataOf: "Hyper",
-  };
-  if (high && low) {
-    wsHyperlinkLastData = obj;
-    compareAndSendResponse(
-      wsAevoLastData,
-      obj,
-      wsDriftLastData,
-      wsCopy,
-      symbol
-    );
-  }
-});
+// wsHyperlink.on("message", function message(data) {
+//   const parseData = JSON.parse(data);
+//   const { high, low, time } = calculateHyperLinkLeverage(parseData);
+//   const obj = {
+//     high,
+//     low,
+//     time,
+//     dataOf: "Hyper",
+//   };
+//   if (high && low) {
+//     wsHyperlinkLastData = obj;
+//     compareAndSendResponse(
+//       wsAevoLastData,
+//       obj,
+//       wsDriftLastData,
+//       wsCopy,
+//       symbol
+//     );
+//   }
+// });
 const unsubscribePreviousEvents = (data) => {
   const userId = data.id;
   const eventArray = subEvents[userId];
@@ -141,7 +141,7 @@ const unsubscribePreviousEvents = (data) => {
     eventArray.map((item) => {
       if (item.site === "hyper") {
         const event = { ...item.event, method: "unsubscribe" };
-        wsHyperlink.send(JSON.stringify(event));
+        // wsHyperlink.send(JSON.stringify(event));
       }
       if (item.site === "aevo") {
         const event = { ...item.event, op: "unsubscribe" };
