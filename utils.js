@@ -24,12 +24,21 @@ const calculateHyperLinkLeverage = (jsonData) => {
     time: jsonData?.data?.time,
   };
 };
+let firstResponseSend = false;
+let lastResponse = null;
+let lastCoin = null;
 const compareAndSendResponse = (
   aevoData,
   hyperlinkData,
   wsDriftLastData,
-  wsCopy
+  wsCopy,
+  coin
 ) => {
+  if (coin !== lastCoin) {
+    lastCoin = coin;
+    lastResponse = null;
+    firstResponseSend = false;
+  }
   console.log("hyperlinkData >> ", hyperlinkData);
   console.log("wsDriftLastData >> ", wsDriftLastData);
   console.log("aevoData >> ", aevoData);
@@ -56,7 +65,17 @@ const compareAndSendResponse = (
       high: highestOne.high,
       low: lowestOne.low,
     };
-    wsCopy.send(JSON.stringify({ ...obj }));
+
+    if (firstResponseSend) {
+      if (obj.high > lastResponse.high) {
+        wsCopy.send(JSON.stringify({ ...obj }));
+        lastResponse = obj;
+      }
+    } else {
+      firstResponseSend = true;
+      wsCopy.send(JSON.stringify({ ...obj }));
+      lastResponse = obj;
+    }
     // console.log("res send : ", obj);
   }
 };

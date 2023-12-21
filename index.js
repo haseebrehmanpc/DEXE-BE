@@ -18,6 +18,7 @@ dotenv.config();
 const WebSocket = require("ws");
 const WebSocketServer = require("ws").WebSocketServer;
 let wsCopy = null;
+let symbol = null;
 console.log("is process.env.WEBSOCKET_PORT : ", process.env.WEBSOCKET_PORT);
 const websocketPort = process.env.WEBSOCKET_PORT || 3003;
 const socketServer = new WebSocketServer({
@@ -34,7 +35,7 @@ socketServer.on("connection", (ws) => {
   ws.on("message", (data) => {
     const parseData = JSON.parse(data);
     console.log("recieved event ", parseData);
-    const symbol = parseData.data.coin;
+    symbol = parseData.data.coin;
     unsubscribePreviousEvents({ id: 1 });
     resetAllData();
     // console.log(`Client has sent us: ${parseData.data}`);
@@ -104,11 +105,16 @@ wsDrift.on("message", function message(data) {
       dataOf: "Drift",
     };
     wsDriftLastData = obj;
-    compareAndSendResponse(wsAevoLastData, wsHyperlinkLastData, obj, wsCopy);
+    compareAndSendResponse(
+      wsAevoLastData,
+      wsHyperlinkLastData,
+      obj,
+      wsCopy,
+      symbol
+    );
   }
 });
 wsHyperlink.on("message", function message(data) {
-
   const parseData = JSON.parse(data);
   const { high, low, time } = calculateHyperLinkLeverage(parseData);
   const obj = {
@@ -117,9 +123,15 @@ wsHyperlink.on("message", function message(data) {
     time,
     dataOf: "Hyper",
   };
-  wsHyperlinkLastData = obj;
   if (high && low) {
-    compareAndSendResponse(wsAevoLastData, obj, wsDriftLastData, wsCopy);
+    wsHyperlinkLastData = obj;
+    compareAndSendResponse(
+      wsAevoLastData,
+      obj,
+      wsDriftLastData,
+      wsCopy,
+      symbol
+    );
   }
 });
 const unsubscribePreviousEvents = (data) => {
@@ -158,8 +170,8 @@ wsAevo.on("message", function message(data) {
   const parsedData = JSON.parse(data);
 
   const obj = {
-    low: parsedData?.data?.tickers?.[0]?.bid.price,
-    high: parsedData?.data?.tickers?.[0]?.ask.price,
+    low: +parsedData?.data?.tickers?.[0]?.bid.price,
+    high: +parsedData?.data?.tickers?.[0]?.ask.price,
     time: parsedData?.data?.timestamp,
     dataOf: "Aevo",
   };
@@ -171,7 +183,13 @@ wsAevo.on("message", function message(data) {
     parsedData?.data?.tickers?.[0]?.bid.price &&
     parsedData?.data?.tickers?.[0]?.ask.price
   ) {
-    compareAndSendResponse(obj, wsHyperlinkLastData, wsDriftLastData, wsCopy);
+    compareAndSendResponse(
+      obj,
+      wsHyperlinkLastData,
+      wsDriftLastData,
+      wsCopy,
+      symbol
+    );
   }
 });
 // Define a route for the root URL
