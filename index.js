@@ -48,7 +48,6 @@ wsDrift.on("message", function message(data) {
   const parseData = JSON.parse(data);
   const depthData = JSON.parse(parseData.data || "{}");
   if (depthData?.bids?.[0] && depthData?.asks?.[0]) {
-
     const obj = {
       high: depthData.bids[0].price / 1000000,
       low: depthData.asks[0].price / 1000000,
@@ -63,6 +62,7 @@ wsDrift.on("message", function message(data) {
       wsCopy,
       symbol
     );
+    wsHyperlink.send(JSON.stringify({ method: "ping" }));
   }
 });
 wsHyperlink.on("message", function message(data) {
@@ -141,6 +141,7 @@ wsAevo.on("message", function message(data) {
       wsCopy,
       symbol
     );
+    wsHyperlink.send(JSON.stringify({ method: "ping" }));
   }
 });
 // Define a route for the root URL

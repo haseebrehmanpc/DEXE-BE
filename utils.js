@@ -1,5 +1,11 @@
 const calculateHyperLinkLeverage = (jsonData) => {
-  const levels = jsonData.data.levels;
+  const levels = jsonData?.data?.levels;
+  if (!levels?.length)
+    return {
+      high: null,
+      low: null,
+      time: null,
+    };
   let lowestN1 = null;
   let highestN2 = null;
   levels?.forEach((level) => {
