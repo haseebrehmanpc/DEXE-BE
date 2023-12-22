@@ -54,12 +54,14 @@ const compareAndSendResponse = (
     const highestOne = calculateHighest(arryToCal);
 
     const lowestOne = calculateLowest(arryToCal);
+    // return if data of same exchange
+    if (highestOne.dataOf === lowestOne.dataOf) return;
     const spreadPercent = spreadPercentageCalculator(
       highestOne.high,
       lowestOne.low
     );
     const obj = {
-      spread: spreadPercent,
+      spread: spreadPercent.toFixed(2),
       highOnSite: highestOne.dataOf,
       lowOnSite: lowestOne.dataOf,
       high: highestOne.high,
@@ -67,7 +69,7 @@ const compareAndSendResponse = (
     };
 
     if (firstResponseSend) {
-      if (obj.high > lastResponse.high) {
+      if (obj.spread > lastResponse.spread) {
         wsCopy.send(JSON.stringify({ ...obj }));
         lastResponse = obj;
       }
@@ -85,13 +87,10 @@ const socketError = (source, error) => {
 };
 
 const spreadPercentageCalculator = (high, low) => {
-  console.log({ high, low });
-  const spread = +high - +low;
-  const midPoint = (+high + +low) / 2;
-  const spreadPercentage = ((spread / midPoint) * 100).toFixed(2);
+  const spread = Math.abs(+high - +low);
 
-  //   will calculate on if exchange A is higher than
-  // const spread = exchangeA.high - exchangeB.low;
+  const midPoint = (+high + +low) / 2;
+  const spreadPercentage = (spread / midPoint) * 100;
   return spreadPercentage;
 };
 
