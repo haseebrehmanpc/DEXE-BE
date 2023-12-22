@@ -122,7 +122,7 @@ wsAevo.on("message", function message(data) {
   const obj = {
     low: +parsedData?.data?.tickers?.[0]?.bid.price,
     high: +parsedData?.data?.tickers?.[0]?.ask.price,
-    time: parsedData?.data?.timestamp,
+    time: +parsedData?.data?.timestamp,
     dataOf: "Aevo",
   };
   if (parsedData?.data?.low && parsedData?.data?.high) {
