@@ -62,7 +62,6 @@ wsDrift.on("message", function message(data) {
       wsCopy,
       symbol
     );
-    wsHyperlink.send(JSON.stringify({ method: "ping" }));
   }
 });
 wsHyperlink.on("message", function message(data) {
@@ -141,7 +140,6 @@ wsAevo.on("message", function message(data) {
       wsCopy,
       symbol
     );
-    wsHyperlink.send(JSON.stringify({ method: "ping" }));
   }
 });
 // Define a route for the root URL
@@ -200,3 +198,9 @@ socketServer.on("connection", (ws) => {
     }
   });
 });
+function keepHyperLiquidLive() {
+  wsHyperlink.send(JSON.stringify({ method: "ping" }));
+  console.log("Keeping hyper liquid alive!");
+}
+
+const intervalId = setInterval(keepHyperLiquidLive, 60000);
