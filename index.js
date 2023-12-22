@@ -19,55 +19,7 @@ const WebSocket = require("ws");
 const WebSocketServer = require("ws").WebSocketServer;
 let wsCopy = null;
 let symbol = null;
-console.log("is process.env.WEBSOCKET_PORT : ", process.env.WEBSOCKET_PORT);
-const websocketPort = process.env.WEBSOCKET_PORT
-const socketServer = new WebSocketServer({
-  port: websocketPort,
-});
 const subEvents = {};
-socketServer.on("connection", (ws) => {
-  console.log("NEW CLIENT CONNETED IN WEBSOCKET");
-  wsCopy = ws;
-  ws.on("close", () => {
-    console.log("CLOSED");
-  });
-
-  ws.on("message", (data) => {
-    const parseData = JSON.parse(data);
-    console.log("recieved event ", parseData);
-    symbol = parseData.data.coin;
-    unsubscribePreviousEvents({ id: 1 });
-    resetAllData();
-    // console.log(`Client has sent us: ${parseData.data}`);
-    if (isAssetsExist(hyperLiquidAssets, symbol)) {
-      const event = {
-        method: "subscribe",
-        subscription: { type: "l2Book", coin: symbol },
-      };
-      // wsHyperlink.send(JSON.stringify(event));
-      appendSubscribedEvents(1, { site: "hyper", event });
-    }
-    if (isAssetsExist(aevoAssets, symbol)) {
-      const event = {
-        op: "subscribe",
-        data: [`ticker:${symbol}:PERPETUAL`],
-      };
-      wsAevo.send(JSON.stringify(event));
-      appendSubscribedEvents(1, { site: "aevo", event });
-    }
-
-    if (isAssetsExist(driftPrepAsset, symbol)) {
-      const event = {
-        type: "subscribe",
-        marketType: "perp",
-        channel: "orderbook",
-        market: `${symbol}-PERP`,
-      };
-      wsDrift.send(JSON.stringify(event));
-      appendSubscribedEvents(1, { site: "drift", event });
-    }
-  });
-});
 
 const wsAevo = new WebSocket("wss://ws.aevo.xyz");
 // const wsHyperlink = new WebSocket("wss://api.hyperliquid.xyz/ws");
@@ -199,6 +151,53 @@ app.get("/", (req, res) => {
 
 console.log("is env running ", process.env.PORT);
 const port = process.env.PORT || 3000;
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`Server is listening on port ${port}`);
+});
+const socketServer = new WebSocketServer({
+  server: server,
+});
+
+socketServer.on("connection", (ws) => {
+  console.log("NEW CLIENT CONNETED IN WEBSOCKET");
+  wsCopy = ws;
+  ws.on("close", () => {
+    console.log("CLOSED");
+  });
+
+  ws.on("message", (data) => {
+    const parseData = JSON.parse(data);
+    console.log("recieved event ", parseData);
+    symbol = parseData.data.coin;
+    unsubscribePreviousEvents({ id: 1 });
+    resetAllData();
+    // console.log(`Client has sent us: ${parseData.data}`);
+    if (isAssetsExist(hyperLiquidAssets, symbol)) {
+      const event = {
+        method: "subscribe",
+        subscription: { type: "l2Book", coin: symbol },
+      };
+      // wsHyperlink.send(JSON.stringify(event));
+      appendSubscribedEvents(1, { site: "hyper", event });
+    }
+    if (isAssetsExist(aevoAssets, symbol)) {
+      const event = {
+        op: "subscribe",
+        data: [`ticker:${symbol}:PERPETUAL`],
+      };
+      wsAevo.send(JSON.stringify(event));
+      appendSubscribedEvents(1, { site: "aevo", event });
+    }
+
+    if (isAssetsExist(driftPrepAsset, symbol)) {
+      const event = {
+        type: "subscribe",
+        marketType: "perp",
+        channel: "orderbook",
+        market: `${symbol}-PERP`,
+      };
+      wsDrift.send(JSON.stringify(event));
+      appendSubscribedEvents(1, { site: "drift", event });
+    }
+  });
 });
