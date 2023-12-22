@@ -22,7 +22,7 @@ let symbol = null;
 const subEvents = {};
 
 const wsAevo = new WebSocket("wss://ws.aevo.xyz");
-// const wsHyperlink = new WebSocket("wss://api.hyperliquid.xyz/ws");
+const wsHyperlink = new WebSocket("wss://api.hyperliquid.xyz/ws");
 const wsDrift = new WebSocket("wss://dlob.drift.trade/ws");
 let wsAevoLastData = null;
 let wsHyperlinkLastData = null;
@@ -36,11 +36,11 @@ const resetAllData = () => {
 const app = express();
 app.use(cors());
 wsAevo.on("error", (err) => socketError("wsAevo", err));
-// wsHyperlink.on("error", (err) => socketError("wsHyperlink", err));
+wsHyperlink.on("error", (err) => socketError("wsHyperlink", err));
 wsDrift.on("error", (err) => socketError("wsHyperlink", err));
-// wsHyperlink.on("open", function open() {
-//   console.log("connection openned for wsHyperlink ");
-// });
+wsHyperlink.on("open", function open() {
+  console.log("connection openned for wsHyperlink ");
+});
 wsDrift.on("open", function open() {
   console.log("connection openned for wsDrift ");
 });
@@ -48,8 +48,7 @@ wsDrift.on("message", function message(data) {
   const parseData = JSON.parse(data);
   const depthData = JSON.parse(parseData.data || "{}");
   if (depthData?.bids?.[0] && depthData?.asks?.[0]) {
-    console.log("parsed data highest bid :", depthData.bids[0]);
-    console.log("parsed data low ask :", depthData.asks[0]);
+
     const obj = {
       high: depthData.bids[0].price / 1000000,
       low: depthData.asks[0].price / 1000000,
@@ -66,26 +65,26 @@ wsDrift.on("message", function message(data) {
     );
   }
 });
-// wsHyperlink.on("message", function message(data) {
-//   const parseData = JSON.parse(data);
-//   const { high, low, time } = calculateHyperLinkLeverage(parseData);
-//   const obj = {
-//     high,
-//     low,
-//     time,
-//     dataOf: "Hyper",
-//   };
-//   if (high && low) {
-//     wsHyperlinkLastData = obj;
-//     compareAndSendResponse(
-//       wsAevoLastData,
-//       obj,
-//       wsDriftLastData,
-//       wsCopy,
-//       symbol
-//     );
-//   }
-// });
+wsHyperlink.on("message", function message(data) {
+  const parseData = JSON.parse(data);
+  const { high, low, time } = calculateHyperLinkLeverage(parseData);
+  const obj = {
+    high,
+    low,
+    time,
+    dataOf: "Hyper",
+  };
+  if (high && low) {
+    wsHyperlinkLastData = obj;
+    compareAndSendResponse(
+      wsAevoLastData,
+      obj,
+      wsDriftLastData,
+      wsCopy,
+      symbol
+    );
+  }
+});
 const unsubscribePreviousEvents = (data) => {
   const userId = data.id;
   const eventArray = subEvents[userId];
@@ -93,7 +92,7 @@ const unsubscribePreviousEvents = (data) => {
     eventArray.map((item) => {
       if (item.site === "hyper") {
         const event = { ...item.event, method: "unsubscribe" };
-        // wsHyperlink.send(JSON.stringify(event));
+        wsHyperlink.send(JSON.stringify(event));
       }
       if (item.site === "aevo") {
         const event = { ...item.event, op: "unsubscribe" };
@@ -130,7 +129,7 @@ wsAevo.on("message", function message(data) {
   if (parsedData?.data?.low && parsedData?.data?.high) {
     wsAevoLastData = obj;
   }
-  console.log("obj >", obj);
+  // console.log("obj >", obj);
   if (
     parsedData?.data?.tickers?.[0]?.bid.price &&
     parsedData?.data?.tickers?.[0]?.ask.price
@@ -149,7 +148,6 @@ app.get("/", (req, res) => {
   res.send("Server is runing!");
 });
 
-console.log("is env running ", process.env.PORT);
 const port = process.env.PORT || 3000;
 const server = app.listen(port, () => {
   console.log(`Server is listening on port ${port}`);
@@ -177,7 +175,7 @@ socketServer.on("connection", (ws) => {
         method: "subscribe",
         subscription: { type: "l2Book", coin: symbol },
       };
-      // wsHyperlink.send(JSON.stringify(event));
+      wsHyperlink.send(JSON.stringify(event));
       appendSubscribedEvents(1, { site: "hyper", event });
     }
     if (isAssetsExist(aevoAssets, symbol)) {
