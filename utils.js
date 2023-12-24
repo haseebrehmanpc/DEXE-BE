@@ -66,6 +66,9 @@ const compareAndSendResponse = (
       highestOne.high,
       lowestOne.low
     );
+    // return for negative spreads
+    if (spreadPercent < 0) return;
+
     const obj = {
       spread: spreadPercent.toFixed(2),
       highOnSite: highestOne.dataOf,
@@ -75,7 +78,9 @@ const compareAndSendResponse = (
     };
 
     if (firstResponseSend) {
-      if (obj.spread > lastResponse.spread) {
+      // logic ki **** krra
+      console.log("ehmm : ", obj.high > lastResponse.high);
+      if (obj.high > lastResponse.high) {
         wsCopy.send(JSON.stringify({ ...obj }));
         lastResponse = obj;
       }
@@ -93,7 +98,7 @@ const socketError = (source, error) => {
 };
 
 const spreadPercentageCalculator = (high, low) => {
-  const spread = Math.abs(+high - +low);
+  const spread = +high - +low;
 
   const midPoint = (+high + +low) / 2;
   const spreadPercentage = (spread / midPoint) * 100;
