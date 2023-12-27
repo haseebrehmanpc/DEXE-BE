@@ -62,12 +62,13 @@ const compareAndSendResponse = (
     const lowestOne = calculateLowest(arryToCal);
     // return if data of same exchange
     if (highestOne.dataOf === lowestOne.dataOf) return;
+    // return for negative spreads
+    if (highestOne.high < lowestOne.low) return;
     const spreadPercent = spreadPercentageCalculator(
       highestOne.high,
       lowestOne.low
     );
-    // return for negative spreads
-    if (spreadPercent < 0) return;
+
 
     const obj = {
       spread: spreadPercent.toFixed(2),

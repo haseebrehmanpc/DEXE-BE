@@ -28,7 +28,7 @@ let wsAevoLastData = null;
 let wsHyperlinkLastData = null;
 let wsDriftLastData = null;
 
-const resetAllData = () => {
+const resetAllData = async() => {
   wsAevoLastData = null;
   wsHyperlinkLastData = null;
   wsDriftLastData = null;
@@ -162,12 +162,12 @@ socketServer.on("connection", (ws) => {
     console.log("CLOSED");
   });
 
-  ws.on("message", (data) => {
+  ws.on("message", async(data) => {
     const parseData = JSON.parse(data);
     console.log("recieved event ", parseData);
     symbol = parseData.data.coin;
     unsubscribePreviousEvents({ id: 1 });
-    resetAllData();
+    await resetAllData();
     // console.log(`Client has sent us: ${parseData.data}`);
     if (isAssetsExist(hyperLiquidAssets, symbol)) {
       const event = {
