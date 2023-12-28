@@ -1,4 +1,35 @@
 const calculateHyperLinkLeverage = (jsonData) => {
+  // l1
+
+  // const levels = jsonData?.data?.levels;
+  // const firstLevel = levels?.[0];
+  // if (!firstLevel?.length)
+  //   return {
+  //     high: null,
+  //     low: null,
+  //     time: null,
+  //   };
+
+  // let maxLengthPx = -Infinity;
+  // let highestN2 = null;
+  // let lowestN1 = null;
+  // firstLevel.map((entry) => {
+  //   const pxLength = entry.px.length;
+  //   if (pxLength > maxLengthPx) {
+  //     maxLengthPx = pxLength;
+  //     highestN2 = parseFloat(entry.px);
+  //     lowestN1 = parseFloat(entry.px);
+  //   } else if (pxLength === maxLengthPx) {
+  //     const pxValue = parseFloat(entry.px);
+  //     if (pxValue > highestN2) {
+  //       highestN2 = pxValue;
+  //     } else if (pxValue < lowestN1) {
+  //       lowestN1 = pxValue;
+  //     }
+  //   }
+  // });
+
+  // l2
   const levels = jsonData?.data?.levels;
   if (!levels?.length)
     return {
@@ -6,20 +37,23 @@ const calculateHyperLinkLeverage = (jsonData) => {
       low: null,
       time: null,
     };
-  let lowestN1 = null;
+  let maxLengthPx = -Infinity;
   let highestN2 = null;
+  let lowestN1 = null;
   levels?.forEach((level) => {
-    level?.forEach((entry) => {
-      if (
-        entry.n === 1 &&
-        (lowestN1 === null || parseFloat(entry.px) < lowestN1)
-      ) {
-        lowestN1 = parseFloat(entry.px);
-      } else if (
-        entry.n === 2 &&
-        (highestN2 === null || parseFloat(entry.px) > highestN2)
-      ) {
+    level?.forEach((entry, ind) => {
+      const pxLength = entry.px.length;
+      if (pxLength > maxLengthPx) {
+        maxLengthPx = pxLength;
         highestN2 = parseFloat(entry.px);
+        lowestN1 = parseFloat(entry.px);
+      } else if (pxLength === maxLengthPx) {
+        const pxValue = parseFloat(entry.px);
+        if (pxValue > highestN2) {
+          highestN2 = pxValue;
+        } else if (pxValue < lowestN1) {
+          lowestN1 = pxValue;
+        }
       }
     });
   });
@@ -68,7 +102,6 @@ const compareAndSendResponse = (
       highestOne.high,
       lowestOne.low
     );
-
 
     const obj = {
       spread: spreadPercent.toFixed(2),
