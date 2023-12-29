@@ -28,7 +28,7 @@ let wsAevoLastData = null;
 let wsHyperlinkLastData = null;
 let wsDriftLastData = null;
 
-const resetAllData = async() => {
+const resetAllData = async () => {
   wsAevoLastData = null;
   wsHyperlinkLastData = null;
   wsDriftLastData = null;
@@ -46,7 +46,9 @@ wsDrift.on("open", function open() {
 });
 wsDrift.on("message", function message(data) {
   const parseData = JSON.parse(data);
-  const depthData = JSON.parse(parseData.data || "{}");
+  const depthData = JSON.parse(parseData?.data || "{}");
+  // returning if getting response of other coin
+  if (depthData?.marketName?.split("-")?.[0] !== symbol) return;
   if (depthData?.bids?.[0] && depthData?.asks?.[0]) {
     const obj = {
       high: depthData.bids[0].price / 1000000,
@@ -66,6 +68,8 @@ wsDrift.on("message", function message(data) {
 });
 wsHyperlink.on("message", function message(data) {
   const parseData = JSON.parse(data);
+  // returning if getting response of other coin
+  if (parseData?.data?.coin !== symbol) return;
   const { high, low, time } = calculateHyperLinkLeverage(parseData);
   const obj = {
     high,
@@ -118,7 +122,8 @@ wsAevo.on("open", function open() {
 wsAevo.on("message", function message(data) {
   // console.log("received: %s", data);
   const parsedData = JSON.parse(data);
-
+  // returning if getting response of other coin
+  if (parsedData?.channel?.split(":")?.slice(1, -1)?.[0] !== symbol) return;
   const obj = {
     low: +parsedData?.data?.tickers?.[0]?.bid.price,
     high: +parsedData?.data?.tickers?.[0]?.ask.price,
@@ -162,7 +167,7 @@ socketServer.on("connection", (ws) => {
     console.log("CLOSED");
   });
 
-  ws.on("message", async(data) => {
+  ws.on("message", async (data) => {
     const parseData = JSON.parse(data);
     console.log("recieved event ", parseData);
     symbol = parseData.data.coin;

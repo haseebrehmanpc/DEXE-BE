@@ -74,7 +74,7 @@ const compareAndSendResponse = (
     const lowestOne = calculateLowest(arryToCal);
     // return if data of same exchange
     if (highestOne.dataOf === lowestOne.dataOf) {
-      console.log("same exchange");
+      console.log("same exchange", lowestOne.dataOf);
       return;
     }
     // return for negative spreads
@@ -138,7 +138,7 @@ const calculateLowest = (objects) => {
   }
 
   return objects.reduce((highest, current) => {
-    return current?.low > highest?.low ? current : highest;
+    return current?.low < highest?.low ? current : highest;
   }, objects[0]);
 };
 
