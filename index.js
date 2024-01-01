@@ -13,26 +13,19 @@ const {
   hyperLiquidAssets,
   driftPrepAsset,
   isAssetsExist,
+  commonOnThree,
 } = require("./constant/assets");
 dotenv.config();
 const WebSocket = require("ws");
 const WebSocketServer = require("ws").WebSocketServer;
 let wsCopy = null;
-let symbol = null;
+// let symbol = null;
 const subEvents = {};
 
 const wsAevo = new WebSocket("wss://ws.aevo.xyz");
 const wsHyperlink = new WebSocket("wss://api.hyperliquid.xyz/ws");
 const wsDrift = new WebSocket("wss://dlob.drift.trade/ws");
-let wsAevoLastData = null;
-let wsHyperlinkLastData = null;
-let wsDriftLastData = null;
 
-const resetAllData = async () => {
-  wsAevoLastData = null;
-  wsHyperlinkLastData = null;
-  wsDriftLastData = null;
-};
 const app = express();
 app.use(cors());
 wsAevo.on("error", (err) => socketError("wsAevo", err));
@@ -48,44 +41,36 @@ wsDrift.on("message", function message(data) {
   const parseData = JSON.parse(data);
   const depthData = JSON.parse(parseData?.data || "{}");
   // returning if getting response of other coin
-  if (depthData?.marketName?.split("-")?.[0] !== symbol) return;
+  const coinSymbol = depthData?.marketName?.split("-")?.[0];
+  if (!coinSymbol) return;
   if (depthData?.bids?.[0] && depthData?.asks?.[0]) {
     const obj = {
       high: depthData.bids[0].price / 1000000,
       low: depthData.asks[0].price / 1000000,
       time: generateUnixTimeWithSameLength(13),
       dataOf: "Drift",
+      symbol: coinSymbol,
     };
     wsDriftLastData = obj;
-    compareAndSendResponse(
-      wsAevoLastData,
-      wsHyperlinkLastData,
-      obj,
-      wsCopy,
-      symbol
-    );
+    compareAndSendResponse(obj, wsCopy);
   }
 });
 wsHyperlink.on("message", function message(data) {
   const parseData = JSON.parse(data);
   // returning if getting response of other coin
-  if (parseData?.data?.coin !== symbol) return;
+  const coinSymbol = parseData?.data?.coin;
+  if (!coinSymbol) return;
   const { high, low, time } = calculateHyperLinkLeverage(parseData);
   const obj = {
     high,
     low,
     time,
     dataOf: "Hyper",
+    symbol: coinSymbol,
   };
   if (high && low) {
     wsHyperlinkLastData = obj;
-    compareAndSendResponse(
-      wsAevoLastData,
-      obj,
-      wsDriftLastData,
-      wsCopy,
-      symbol
-    );
+    compareAndSendResponse(obj, wsCopy);
   }
 });
 const unsubscribePreviousEvents = (data) => {
@@ -123,28 +108,20 @@ wsAevo.on("message", function message(data) {
   // console.log("received: %s", data);
   const parsedData = JSON.parse(data);
   // returning if getting response of other coin
-  if (parsedData?.channel?.split(":")?.slice(1, -1)?.[0] !== symbol) return;
+  const coinSymbol = parsedData?.channel?.split(":")?.slice(1, -1)?.[0];
+  // if (!coinSymbol) return;
   const obj = {
     high: +parsedData?.data?.tickers?.[0]?.bid.price,
     low: +parsedData?.data?.tickers?.[0]?.ask.price,
     time: +parsedData?.data?.timestamp,
     dataOf: "Aevo",
+    symbol: coinSymbol,
   };
-  if (parsedData?.data?.low && parsedData?.data?.high) {
-    wsAevoLastData = obj;
-  }
-  // console.log("obj >", obj);
   if (
     parsedData?.data?.tickers?.[0]?.bid.price &&
     parsedData?.data?.tickers?.[0]?.ask.price
   ) {
-    compareAndSendResponse(
-      obj,
-      wsHyperlinkLastData,
-      wsDriftLastData,
-      wsCopy,
-      symbol
-    );
+    compareAndSendResponse(obj, wsCopy);
   }
 });
 // Define a route for the root URL
@@ -170,37 +147,42 @@ socketServer.on("connection", (ws) => {
   ws.on("message", async (data) => {
     const parseData = JSON.parse(data);
     console.log("recieved event ", parseData);
-    symbol = parseData.data.coin;
-    unsubscribePreviousEvents({ id: 1 });
-    await resetAllData();
-    // console.log(`Client has sent us: ${parseData.data}`);
-    if (isAssetsExist(hyperLiquidAssets, symbol)) {
-      const event = {
-        method: "subscribe",
-        subscription: { type: "l2Book", coin: symbol },
-      };
-      wsHyperlink.send(JSON.stringify(event));
-      appendSubscribedEvents(1, { site: "hyper", event });
-    }
-    if (isAssetsExist(aevoAssets, symbol)) {
-      const event = {
-        op: "subscribe",
-        data: [`ticker:${symbol}:PERPETUAL`],
-      };
-      wsAevo.send(JSON.stringify(event));
-      appendSubscribedEvents(1, { site: "aevo", event });
-    }
 
-    if (isAssetsExist(driftPrepAsset, symbol)) {
-      const event = {
-        type: "subscribe",
-        marketType: "perp",
-        channel: "orderbook",
-        market: `${symbol}-PERP`,
-      };
-      wsDrift.send(JSON.stringify(event));
-      appendSubscribedEvents(1, { site: "drift", event });
-    }
+    // unsubscribePreviousEvents({ id: 1 });
+    // await resetAllData();
+    // console.log(`Client has sent us: ${parseData.data}`);
+
+    commonOnThree.map((symbol) => {
+      if (isAssetsExist(hyperLiquidAssets, symbol)) {
+        const event = {
+          method: "subscribe",
+          subscription: { type: "l2Book", coin: symbol },
+        };
+        wsHyperlink.send(JSON.stringify(event));
+        appendSubscribedEvents(1, { site: "hyper", event });
+      }
+      if (isAssetsExist(aevoAssets, symbol)) {
+        const event = {
+          op: "subscribe",
+          data: [`ticker:${symbol}:PERPETUAL`],
+        };
+        wsAevo.send(JSON.stringify(event));
+        appendSubscribedEvents(1, { site: "aevo", event });
+      }
+
+      if (isAssetsExist(driftPrepAsset, symbol)) {
+        const event = {
+          type: "subscribe",
+          marketType: "perp",
+          channel: "orderbook",
+          market: `${symbol}-PERP`,
+        };
+        wsDrift.send(JSON.stringify(event));
+        appendSubscribedEvents(1, { site: "drift", event });
+      }
+    });
+
+    console.log("total users connected to server : ", count);
   });
 });
 function keepHyperLiquidLive() {
