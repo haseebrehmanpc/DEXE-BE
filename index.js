@@ -7,13 +7,16 @@ const {
   socketError,
   spreadPercentageCalculator,
   generateUnixTimeWithSameLength,
+  findVertexIdBySymbol,
+  findVertexSymbolById,
 } = require("./utils");
 const {
   aevoAssets,
   hyperLiquidAssets,
   driftPrepAsset,
   isAssetsExist,
-  commonOnThree,
+  commonOnFour,
+  vertexSymbols,
 } = require("./constant/assets");
 dotenv.config();
 const WebSocket = require("ws");
@@ -25,14 +28,20 @@ const subEvents = {};
 const wsAevo = new WebSocket("wss://ws.aevo.xyz");
 const wsHyperlink = new WebSocket("wss://api.hyperliquid.xyz/ws");
 const wsDrift = new WebSocket("wss://dlob.drift.trade/ws");
-
+const wsVertex = new WebSocket(
+  "wss://gateway.prod.vertexprotocol.com/v1/subscribe"
+);
 const app = express();
 app.use(cors());
 wsAevo.on("error", (err) => socketError("wsAevo", err));
+wsVertex.on("error", (err) => socketError("wsVertex", err));
 wsHyperlink.on("error", (err) => socketError("wsHyperlink", err));
 wsDrift.on("error", (err) => socketError("wsHyperlink", err));
 wsHyperlink.on("open", function open() {
   console.log("connection openned for wsHyperlink ");
+});
+wsVertex.on("open", function open() {
+  console.log("connection openned for wsVertex ");
 });
 wsDrift.on("open", function open() {
   console.log("connection openned for wsDrift ");
@@ -104,6 +113,23 @@ wsAevo.on("open", function open() {
   console.log("opened connection for wsAevo");
 });
 
+wsVertex.on("message", function message(data) {
+  // console.log("received: %s", data);
+  const parsedData = JSON.parse(data);
+
+  const coinSymbol = findVertexSymbolById(parsedData?.product_id);
+  if (!coinSymbol) return;
+  const obj = {
+    high: parsedData?.bid_price / 1e18,
+    low: parsedData?.ask_price / 1e18,
+    time: Math.floor(+parsedData?.timestamp / 1000000),
+    dataOf: "Vertex",
+    symbol: coinSymbol,
+  };
+  if (parsedData?.bid_price && parsedData?.ask_price) {
+    compareAndSendResponse(obj, wsCopy);
+  }
+});
 wsAevo.on("message", function message(data) {
   // console.log("received: %s", data);
   const parsedData = JSON.parse(data);
@@ -152,7 +178,7 @@ socketServer.on("connection", (ws) => {
     // await resetAllData();
     // console.log(`Client has sent us: ${parseData.data}`);
 
-    commonOnThree.map((symbol) => {
+    commonOnFour.map((symbol) => {
       if (isAssetsExist(hyperLiquidAssets, symbol)) {
         const event = {
           method: "subscribe",
@@ -180,8 +206,21 @@ socketServer.on("connection", (ws) => {
         wsDrift.send(JSON.stringify(event));
         appendSubscribedEvents(1, { site: "drift", event });
       }
+      if (isAssetsExist(vertexSymbols, symbol)) {
+        const pid = findVertexIdBySymbol(symbol);
+        if (!pid) return;
+        const event = {
+          method: "subscribe",
+          stream: {
+            type: "best_bid_offer",
+            product_id: pid,
+          },
+          id: 0,
+        };
+        wsVertex.send(JSON.stringify(event));
+        appendSubscribedEvents(1, { site: "Vertex", event });
+      }
     });
-
   });
 });
 function keepHyperLiquidLive() {
@@ -189,4 +228,19 @@ function keepHyperLiquidLive() {
   console.log("Keeping hyper liquid alive!");
 }
 
+function keepVertexLive() {
+  wsVertex.send(
+    JSON.stringify({
+      method: "subscribe",
+      stream: {
+        type: "best_bid_offer",
+        product_id: 800,
+      },
+      id: 0,
+    })
+  );
+  console.log("Keeping vertex liquid alive!");
+}
+
 const intervalId = setInterval(keepHyperLiquidLive, 60000);
+const intervalId2 = setInterval(keepVertexLive, 30000);
