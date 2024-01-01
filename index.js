@@ -113,7 +113,7 @@ wsAevo.on("message", function message(data) {
   const obj = {
     high: +parsedData?.data?.tickers?.[0]?.bid.price,
     low: +parsedData?.data?.tickers?.[0]?.ask.price,
-    time: +parsedData?.data?.timestamp,
+    time: Math.floor(+parsedData?.data?.timestamp / 1000000),
     dataOf: "Aevo",
     symbol: coinSymbol,
   };
@@ -182,7 +182,6 @@ socketServer.on("connection", (ws) => {
       }
     });
 
-    console.log("total users connected to server : ", count);
   });
 });
 function keepHyperLiquidLive() {
