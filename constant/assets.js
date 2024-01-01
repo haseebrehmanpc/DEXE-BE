@@ -176,6 +176,51 @@ const driftPrepAsset = [
   "TIA",
   "JTO",
 ];
+
+const commonOnThree = [
+  "APT",
+  "ARB",
+  "ATOM",
+  "AVAX",
+  "BANANA",
+  "BLUR",
+  "BLZ",
+  "BNB",
+  "BTC",
+  "CANTO",
+  "CRV",
+  "DOGE",
+  "DYDX",
+  "ETH",
+  // "FRIEND", // value difference
+  "HPOS",
+  "ILV",
+  "INJ",
+  "JUP",
+  "LDO",
+  "LINK",
+  "MATIC",
+  "MEME",
+  "MINA",
+  "MKR",
+  "NTRN",
+  "OP",
+  "ORDI",
+  "OX",
+  "PYTH",
+  "RNDR",
+  "SEI",
+  "SOL",
+  "STRAX",
+  "TIA",
+  "TRB",
+  "TRX",
+  "WLD",
+  "XRP",
+  "JTO",
+  // "RLB", hyper not responding
+  "SUI",
+];
 const isAssetsExist = (ary, symbol) => {
   return ary.includes(symbol);
 };
@@ -184,4 +229,5 @@ module.exports = {
   hyperLiquidAssets,
   driftPrepAsset,
   isAssetsExist,
+  commonOnThree,
 };

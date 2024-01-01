@@ -1,3 +1,5 @@
+const { commonOnThree } = require("./constant/assets");
+
 const calculateHyperLinkLeverage = (jsonData) => {
   const levels = jsonData?.data?.levels;
   if (!levels?.length)
@@ -42,46 +44,50 @@ const calculateHyperLinkLeverage = (jsonData) => {
     time: jsonData?.data?.time,
   };
 };
-let firstResponseSend = false;
-let lastResponse = null;
-let lastCoin = null;
-const compareAndSendResponse = (
-  aevoData,
-  hyperlinkData,
-  wsDriftLastData,
-  wsCopy,
-  coin
-) => {
-  if (coin !== lastCoin) {
-    lastCoin = coin;
-    lastResponse = null;
-    firstResponseSend = false;
+
+let aevoLastDataObjs = {};
+let hyperLastDataObjs = {};
+let driftLastDataObjs = {};
+const compareAndSendResponse = (obj, wsCopy) => {
+  // const aevoTimestamp = Math.floor(aevoData?.time / 1000000);
+  // const hyperlinkTimestamp = hyperlinkData?.time;
+  // const driftTimeStamp = wsDriftLastData?.time;
+  if (obj.dataOf === "Aevo") {
+    aevoLastDataObjs[obj.symbol] = obj;
+  } else if (obj.dataOf === "Drift") {
+    driftLastDataObjs[obj.symbol] = obj;
+  } else if (obj.dataOf === "Hyper") {
+    hyperLastDataObjs[obj.symbol] = obj;
   }
-  // console.log("hyperlinkData >> ", hyperlinkData);
-  // console.log("wsDriftLastData >> ", wsDriftLastData);
-  // console.log("aevoData >> ", aevoData);
-  const aevoTimestamp = Math.floor(aevoData?.time / 1000000);
-  const hyperlinkTimestamp = hyperlinkData?.time;
-  const driftTimeStamp = wsDriftLastData?.time;
-  const arryToCal = [];
-  // console.log(driftTimeStamp, hyperlinkTimestamp, aevoTimestamp);
-  if (aevoData) arryToCal.push(aevoData);
-  if (hyperlinkData) arryToCal.push(hyperlinkData);
-  if (wsDriftLastData) arryToCal.push(wsDriftLastData);
-  if (arryToCal.length) {
+  sendResponse(wsCopy);
+};
+const sendResponse = (wsCopy) => {
+  const arrayToSend = [];
+
+  commonOnThree.map((symbol, i) => {
+    const arryToCal = [];
+    if (aevoLastDataObjs[symbol] !== undefined) {
+      arryToCal.push(aevoLastDataObjs[symbol]);
+    }
+    if (driftLastDataObjs[symbol] !== undefined) {
+      arryToCal.push(driftLastDataObjs[symbol]);
+    }
+    if (hyperLastDataObjs[symbol] !== undefined) {
+      arryToCal.push(hyperLastDataObjs[symbol]);
+    }
+
+    // return as symbol data found on only 1 site
+    if (arryToCal.length <= 1) return;
     const highestOne = calculateHighest(arryToCal);
 
     const lowestOne = calculateLowest(arryToCal);
-    // return if data of same exchange
-    if (highestOne.dataOf === lowestOne.dataOf) {
-      console.log("same exchange", lowestOne.dataOf);
-      return;
-    }
+
+    // return if data of same exchange has highest and lowest
+    if (highestOne?.dataOf === lowestOne?.dataOf) return;
+
     // return for negative spreads
-    if (highestOne.high < lowestOne.low) {
-      console.log(`returning because of negative spread`);
-      return;
-    }
+    if (highestOne?.high < lowestOne?.low) return;
+
     const spreadPercent = spreadPercentageCalculator(
       highestOne.high,
       lowestOne.low
@@ -93,24 +99,14 @@ const compareAndSendResponse = (
       lowOnSite: lowestOne.dataOf,
       high: highestOne.high,
       low: lowestOne.low,
+      symbol,
     };
+    arrayToSend.push(obj);
+  });
 
-    if (firstResponseSend) {
-      if (obj.high != lastResponse.high || obj.low != lastResponse.low) {
-        wsCopy.send(JSON.stringify({ ...obj }));
-        lastResponse = obj;
-        console.log(" ----- send -----");
-      }
-    } else {
-      firstResponseSend = true;
-      wsCopy.send(JSON.stringify({ ...obj }));
-
-      lastResponse = obj;
-      console.log(" ----- send -----");
-    }
-  }
+  arrayToSend.sort((a, b) => b.spread - a.spread);
+  wsCopy.send(JSON.stringify(arrayToSend));
 };
-
 const socketError = (source, error) => {
   console.log(`Error in ${source}: `, error);
 };
