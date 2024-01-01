@@ -207,6 +207,7 @@ socketServer.on("connection", (ws) => {
         appendSubscribedEvents(1, { site: "drift", event });
       }
       if (isAssetsExist(vertexSymbols, symbol)) {
+        console.log("Vertex");
         const pid = findVertexIdBySymbol(symbol);
         if (!pid) return;
         const event = {
