@@ -125,8 +125,8 @@ wsAevo.on("message", function message(data) {
   // returning if getting response of other coin
   if (parsedData?.channel?.split(":")?.slice(1, -1)?.[0] !== symbol) return;
   const obj = {
-    low: +parsedData?.data?.tickers?.[0]?.bid.price,
-    high: +parsedData?.data?.tickers?.[0]?.ask.price,
+    high: +parsedData?.data?.tickers?.[0]?.bid.price,
+    low: +parsedData?.data?.tickers?.[0]?.ask.price,
     time: +parsedData?.data?.timestamp,
     dataOf: "Aevo",
   };
