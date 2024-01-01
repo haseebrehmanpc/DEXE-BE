@@ -1,4 +1,4 @@
-const { commonOnThree } = require("./constant/assets");
+const { commonOnFour, vertexAsset } = require("./constant/assets");
 
 const calculateHyperLinkLeverage = (jsonData) => {
   const levels = jsonData?.data?.levels;
@@ -48,6 +48,7 @@ const calculateHyperLinkLeverage = (jsonData) => {
 let aevoLastDataObjs = {};
 let hyperLastDataObjs = {};
 let driftLastDataObjs = {};
+let vertexLastDataObjs = {};
 const compareAndSendResponse = (obj, wsCopy) => {
   // const aevoTimestamp = Math.floor(aevoData?.time / 1000000);
   // const hyperlinkTimestamp = hyperlinkData?.time;
@@ -58,13 +59,15 @@ const compareAndSendResponse = (obj, wsCopy) => {
     driftLastDataObjs[obj.symbol] = obj;
   } else if (obj.dataOf === "Hyper") {
     hyperLastDataObjs[obj.symbol] = obj;
+  }else if (obj.dataOf === "Vertex") {
+    vertexLastDataObjs[obj.symbol] = obj;
   }
   sendResponse(wsCopy);
 };
 const sendResponse = (wsCopy) => {
   const arrayToSend = [];
 
-  commonOnThree.map((symbol, i) => {
+  commonOnFour.map((symbol, i) => {
     const arryToCal = [];
     if (aevoLastDataObjs[symbol] !== undefined) {
       arryToCal.push(aevoLastDataObjs[symbol]);
@@ -74,6 +77,10 @@ const sendResponse = (wsCopy) => {
     }
     if (hyperLastDataObjs[symbol] !== undefined) {
       arryToCal.push(hyperLastDataObjs[symbol]);
+    }
+
+    if (vertexLastDataObjs[symbol] !== undefined) {
+      arryToCal.push(vertexLastDataObjs[symbol]);
     }
 
     // return as symbol data found on only 1 site
@@ -150,10 +157,19 @@ const generateUnixTimeWithSameLength = (length) => {
 
   return generatedUnixTime;
 };
+
+const findVertexSymbolById = (num) => {
+  return vertexAsset.find(({ product_id }) => product_id === num)?.symbol;
+};
+const findVertexIdBySymbol = (currSymbol) => {
+  return vertexAsset.find(({ symbol }) => symbol === currSymbol)?.product_id;
+};
 module.exports = {
   compareAndSendResponse,
   calculateHyperLinkLeverage,
   socketError,
   spreadPercentageCalculator,
   generateUnixTimeWithSameLength,
+  findVertexIdBySymbol,
+  findVertexSymbolById
 };

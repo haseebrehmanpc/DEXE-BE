@@ -177,7 +177,7 @@ const driftPrepAsset = [
   "JTO",
 ];
 
-const commonOnThree = [
+const commonOnFour = [
   "APT",
   "ARB",
   "ATOM",
@@ -217,9 +217,66 @@ const commonOnThree = [
   "TRX",
   "WLD",
   "XRP",
+  "BCH",
+  "COMP",
   "JTO",
-  // "RLB", hyper not responding
+  "LTC",
+  // "RLB",
   "SUI",
+];
+
+const vertexAsset = [
+  { symbol: "AVAX", product_id: 52 },
+  { symbol: "SOL", product_id: 12 },
+  { symbol: "TIA", product_id: 44 },
+  { symbol: "MATIC", product_id: 14 },
+  { symbol: "JTO", product_id: 50 },
+  { symbol: "DYDX", product_id: 38 },
+  { symbol: "COMP", product_id: 26 },
+  { symbol: "SUI", product_id: 16 },
+  { symbol: "BCH", product_id: 24 },
+  { symbol: "CRV", product_id: 40 },
+  { symbol: "APT", product_id: 20 },
+  { symbol: "BTC", product_id: 2 },
+  { symbol: "XRP", product_id: 10 },
+  { symbol: "LINK", product_id: 36 },
+  { symbol: "BNB", product_id: 8 },
+  { symbol: "MKR", product_id: 28 },
+  { symbol: "ETH", product_id: 4 },
+  { symbol: "LTC", product_id: 22 },
+  { symbol: "OP", product_id: 18 },
+  { symbol: "DOGE", product_id: 34 },
+  { symbol: "PYTH", product_id: 46 },
+  { symbol: "MPEPE", product_id: 30 },
+  { symbol: "ARB", product_id: 6 },
+  { symbol: "MBONK", product_id: 48 },
+];
+
+const vertexSymbols = [
+  "AVAX",
+  "SOL",
+  "TIA",
+  "MATIC",
+  "JTO",
+  "DYDX",
+  "COMP",
+  "SUI",
+  "BCH",
+  "CRV",
+  "APT",
+  "BTC",
+  "XRP",
+  "LINK",
+  "BNB",
+  "MKR",
+  "ETH",
+  "LTC",
+  "OP",
+  "DOGE",
+  "PYTH",
+  "MPEPE",
+  "ARB",
+  "MBONK",
 ];
 const isAssetsExist = (ary, symbol) => {
   return ary.includes(symbol);
@@ -229,5 +286,7 @@ module.exports = {
   hyperLiquidAssets,
   driftPrepAsset,
   isAssetsExist,
-  commonOnThree,
+   commonOnFour,
+  vertexAsset,
+  vertexSymbols,
 };
