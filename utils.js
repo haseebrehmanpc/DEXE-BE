@@ -1,4 +1,4 @@
-const { commonOnFour, vertexAsset } = require("./constant/assets");
+const { commonOnFive, vertexAsset } = require("./constant/assets");
 
 const calculateHyperLinkLeverage = (jsonData) => {
   const levels = jsonData?.data?.levels;
@@ -49,6 +49,7 @@ let aevoLastDataObjs = {};
 let hyperLastDataObjs = {};
 let driftLastDataObjs = {};
 let vertexLastDataObjs = {};
+let rabbitXLastDataObjs = {};
 const compareAndSendResponse = (obj, wsCopy) => {
   // const aevoTimestamp = Math.floor(aevoData?.time / 1000000);
   // const hyperlinkTimestamp = hyperlinkData?.time;
@@ -59,15 +60,17 @@ const compareAndSendResponse = (obj, wsCopy) => {
     driftLastDataObjs[obj.symbol] = obj;
   } else if (obj.dataOf === "Hyper") {
     hyperLastDataObjs[obj.symbol] = obj;
-  }else if (obj.dataOf === "Vertex") {
+  } else if (obj.dataOf === "Vertex") {
     vertexLastDataObjs[obj.symbol] = obj;
+  } else if (obj.dataOf === "Rabbitx") {
+    rabbitXLastDataObjs[obj.symbol] = obj;
   }
   sendResponse(wsCopy);
 };
 const sendResponse = (wsCopy) => {
   const arrayToSend = [];
 
-  commonOnFour.map((symbol, i) => {
+  commonOnFive.map((symbol, i) => {
     const arryToCal = [];
     if (aevoLastDataObjs[symbol] !== undefined) {
       arryToCal.push(aevoLastDataObjs[symbol]);
@@ -81,6 +84,10 @@ const sendResponse = (wsCopy) => {
 
     if (vertexLastDataObjs[symbol] !== undefined) {
       arryToCal.push(vertexLastDataObjs[symbol]);
+    }
+
+    if (rabbitXLastDataObjs[symbol] !== undefined) {
+      arryToCal.push(rabbitXLastDataObjs[symbol]);
     }
 
     // return as symbol data found on only 1 site
@@ -171,5 +178,5 @@ module.exports = {
   spreadPercentageCalculator,
   generateUnixTimeWithSameLength,
   findVertexIdBySymbol,
-  findVertexSymbolById
+  findVertexSymbolById,
 };

@@ -15,8 +15,9 @@ const {
   hyperLiquidAssets,
   driftPrepAsset,
   isAssetsExist,
-  commonOnFour,
+  commonOnFive,
   vertexSymbols,
+  rabbitxSymbol,
 } = require("./constant/assets");
 dotenv.config();
 const WebSocket = require("ws");
@@ -31,14 +32,29 @@ const wsDrift = new WebSocket("wss://dlob.drift.trade/ws");
 const wsVertex = new WebSocket(
   "wss://gateway.prod.vertexprotocol.com/v1/subscribe"
 );
+const wsRabbitx = new WebSocket("wss://api.prod.rabbitx.io/ws");
 const app = express();
 app.use(cors());
 wsAevo.on("error", (err) => socketError("wsAevo", err));
+wsRabbitx.on("error", (err) => socketError("wsRabbitx", err));
 wsVertex.on("error", (err) => socketError("wsVertex", err));
 wsHyperlink.on("error", (err) => socketError("wsHyperlink", err));
 wsDrift.on("error", (err) => socketError("wsHyperlink", err));
 wsHyperlink.on("open", function open() {
   console.log("connection openned for wsHyperlink ");
+});
+wsRabbitx.on("open", function open() {
+  console.log("connection openned for wsRabbitx ");
+  wsRabbitx.send(
+    JSON.stringify({
+      connect: {
+        token:
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyMDQ0NSIsImV4cCI6MTcwNDUzNDE5NH0.hkeORwPUnLEmcCEWaPC1UO9oA2sVQAjBBz88ePW3o88",
+        name: "js",
+      },
+      id: 1,
+    })
+  );
 });
 wsVertex.on("open", function open() {
   console.log("connection openned for wsVertex ");
@@ -80,6 +96,34 @@ wsHyperlink.on("message", function message(data) {
   if (high && low) {
     wsHyperlinkLastData = obj;
     compareAndSendResponse(obj, wsCopy);
+  }
+});
+wsRabbitx.on("message", function message(data) {
+  console.log('recieved from rabbitx :',data)
+  try {
+    const parseData = JSON.parse(data);
+    const channel = parseData?.push?.channel;
+    if (!channel) return;
+    const regex = /market:(\w+)-(\w+)/;
+    const match = channel?.match(regex);
+    const coinSymbol = match ? match[1] : null;
+    if (
+      channel &&
+      parseData?.push?.pub?.data?.best_ask &&
+      parseData?.push?.pub?.data?.best_bid &&
+      coinSymbol
+    ) {
+      const obj = {
+        high: +parseData?.push?.pub?.data?.best_bid,
+        low: +parseData?.push?.pub?.data?.best_ask,
+        time: generateUnixTimeWithSameLength(13),
+        dataOf: "Rabbitx",
+        symbol: coinSymbol,
+      };
+      compareAndSendResponse(obj, wsCopy);
+    }
+  } catch (e) {
+    console.log("error in raabitx message ", e);
   }
 });
 const unsubscribePreviousEvents = (data) => {
@@ -178,7 +222,7 @@ socketServer.on("connection", (ws) => {
     // await resetAllData();
     // console.log(`Client has sent us: ${parseData.data}`);
 
-    commonOnFour.map((symbol) => {
+    commonOnFive.map((symbol) => {
       if (isAssetsExist(hyperLiquidAssets, symbol)) {
         const event = {
           method: "subscribe",
@@ -221,6 +265,14 @@ socketServer.on("connection", (ws) => {
         wsVertex.send(JSON.stringify(event));
         appendSubscribedEvents(1, { site: "Vertex", event });
       }
+      if (isAssetsExist(rabbitxSymbol, symbol)) {
+        const event = {
+          subscribe: { channel: `market:${symbol}-USD`, name: "js" },
+          id: 1,
+        };
+        wsRabbitx.send(JSON.stringify(event));
+        appendSubscribedEvents(1, { site: "Rabbitx", event });
+      }
     });
   });
 });
@@ -242,6 +294,11 @@ function keepVertexLive() {
   );
   console.log("Keeping vertex liquid alive!");
 }
+function keepRabbitXLive() {
+  wsRabbitx.send(JSON.stringify({}));
+  console.log("Keeping Rabbitx alive!");
+}
 
 const intervalId = setInterval(keepHyperLiquidLive, 60000);
 const intervalId2 = setInterval(keepVertexLive, 30000);
+const intervalId3 = setInterval(keepRabbitXLive, 3000);

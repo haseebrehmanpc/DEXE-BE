@@ -177,7 +177,7 @@ const driftPrepAsset = [
   "JTO",
 ];
 
-const commonOnFour = [
+const commonOnFive = [
   "APT",
   "ARB",
   "ATOM",
@@ -192,7 +192,7 @@ const commonOnFour = [
   "DOGE",
   "DYDX",
   "ETH",
-  // "FRIEND", // value difference
+  // "FRIEND",
   "HPOS",
   "ILV",
   "INJ",
@@ -217,12 +217,16 @@ const commonOnFour = [
   "TRX",
   "WLD",
   "XRP",
+  "AAVE",
   "BCH",
   "COMP",
   "JTO",
   "LTC",
   // "RLB",
+  "STG",
+  "STX",
   "SUI",
+  "TON",
 ];
 
 const vertexAsset = [
@@ -278,6 +282,40 @@ const vertexSymbols = [
   "ARB",
   "MBONK",
 ];
+
+const rabbitxSymbol = [
+  "BTC",
+  "ETH",
+  "SOL",
+  "ARB",
+  "DOGE",
+  "LDO",
+  "SUI",
+  "PEPE1000",
+  "BCH",
+  "XRP",
+  "WLD",
+  "TON",
+  "STX",
+  "MATIC",
+  "TRB",
+  "APT",
+  "INJ",
+  "AAVE",
+  "LINK",
+  "BNB",
+  "RNDR",
+  "MKR",
+  "RLB",
+  "ORDI",
+  "STG",
+  "SATS1000000",
+  "TIA",
+  "BLUR",
+  "JTO",
+  "MEME",
+  "SEI",
+];
 const isAssetsExist = (ary, symbol) => {
   return ary.includes(symbol);
 };
@@ -286,7 +324,8 @@ module.exports = {
   hyperLiquidAssets,
   driftPrepAsset,
   isAssetsExist,
-   commonOnFour,
+  commonOnFive,
   vertexAsset,
   vertexSymbols,
+  rabbitxSymbol,
 };
