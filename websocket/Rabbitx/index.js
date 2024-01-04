@@ -1,15 +1,18 @@
 const { socketError } = require("../../utils");
 const WebSocket = require("ws");
-const wsRabbitx = new WebSocket("wss://api.prod.rabbitx.io/ws");
+const { RABBITX_URL } = require("../../config/index");
+const wsRabbitx = new WebSocket(RABBITX_URL);
+const { getToken } = require("./utils");
+
 wsRabbitx.on("error", (err) => socketError("wsRabbitx", err));
 
-wsRabbitx.on("open", function open() {
+wsRabbitx.on("open", async function open() {
   console.log("connection openned for wsRabbitx ");
+
   wsRabbitx.send(
     JSON.stringify({
       connect: {
-        token:
-          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyMDQ0NSIsImV4cCI6MTcwNDUzNDE5NH0.hkeORwPUnLEmcCEWaPC1UO9oA2sVQAjBBz88ePW3o88",
+        token: await getToken(),
         name: "js",
       },
       id: 1,

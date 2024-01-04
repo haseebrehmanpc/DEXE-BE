@@ -28,7 +28,7 @@ const rabbitxListener = (wss) => {
         compareAndSendResponse(obj, wss);
       }
     } catch (e) {
-      console.log("error in raabitx message ", e);
+    //   console.log("error in raabitx message ", e);
     }
   });
 };

@@ -1,7 +1,7 @@
 const WebSocket = require("ws");
 const { socketError } = require("../../utils");
-
-const wsHyperlink = new WebSocket("wss://api.hyperliquid.xyz/ws");
+const { HYPERLINK_URL } = require("../../config/index");
+const wsHyperlink = new WebSocket(HYPERLINK_URL);
 
 wsHyperlink.on("error", (err) => socketError("wsHyperlink", err));
 

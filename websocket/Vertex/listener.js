@@ -1,10 +1,9 @@
 const { compareAndSendResponse } = require("../../socketutils");
-const {  findVertexSymbolById } = require("../../utils");
+const { findVertexSymbolById } = require("../../utils");
 const { wsVertex } = require("./index");
 
 const vertexListener = (wss) => {
   wsVertex.on("message", function message(data) {
-    // console.log("received: %s", data);
     const parsedData = JSON.parse(data);
 
     const coinSymbol = findVertexSymbolById(parsedData?.product_id);

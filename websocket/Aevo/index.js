@@ -1,7 +1,7 @@
 const WebSocket = require("ws");
 const { socketError } = require("../../utils");
-
-const wsAevo = new WebSocket("wss://ws.aevo.xyz");
+const { AEVO_URL } = require("../../config/index");
+const wsAevo = new WebSocket(AEVO_URL);
 wsAevo.on("error", (err) => socketError("wsAevo", err));
 
 wsAevo.on("open", function open() {

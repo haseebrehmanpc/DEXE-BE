@@ -1,9 +1,7 @@
 const { socketError } = require("../../utils");
 const WebSocket = require("ws");
-
-const wsVertex = new WebSocket(
-  "wss://gateway.prod.vertexprotocol.com/v1/subscribe"
-);
+const { VERTEX_URL } = require("../../config/index");
+const wsVertex = new WebSocket(VERTEX_URL);
 
 wsVertex.on("error", (err) => socketError("wsVertex", err));
 
