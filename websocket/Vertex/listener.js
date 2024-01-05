@@ -5,7 +5,7 @@ const { wsVertex } = require("./index");
 const vertexListener = (wss) => {
   wsVertex.on("message", function message(data) {
     const parsedData = JSON.parse(data);
-
+    if (!parsedData?.product_id) return;
     const coinSymbol = findVertexSymbolById(parsedData?.product_id);
     if (!coinSymbol) return;
     const obj = {

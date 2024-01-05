@@ -94,6 +94,28 @@ const findVertexSymbolById = (num) => {
 const findVertexIdBySymbol = (currSymbol) => {
   return vertexAsset.find(({ symbol }) => symbol === currSymbol)?.product_id;
 };
+
+async function findCommonSymbol(...arrays) {
+  const stringCountMap = {};
+
+  // Count occurrences of each string in arrays
+  arrays.forEach((arr) => {
+    arr.forEach((str) => {
+      if (stringCountMap[str]) {
+        stringCountMap[str]++;
+      } else {
+        stringCountMap[str] = 1;
+      }
+    });
+  });
+
+  // Filter strings that appear in two or more arrays
+  const commonStrings = Object.keys(stringCountMap).filter(
+    (str) => stringCountMap[str] >= 2
+  );
+
+  return commonStrings;
+}
 module.exports = {
   calculateHighest,
   calculateLowest,
@@ -103,4 +125,5 @@ module.exports = {
   generateUnixTimeWithSameLength,
   findVertexIdBySymbol,
   findVertexSymbolById,
+  findCommonSymbol
 };

@@ -3,6 +3,11 @@ const cors = require("cors");
 const { createWebsocketServer } = require("./websocket");
 const app = express();
 app.use(cors());
+const runCronJob = require("./cronJob");
+
+require("./db/config");
+// Run the cron job
+runCronJob();
 
 // Define a route for the root URL
 app.get("/", (req, res) => {

@@ -10,4 +10,5 @@ module.exports = {
   VERTEX_URL: process.env.VERTEX_URL,
   DRIFT_URL: process.env.DRIFT_URL,
   RABBITX_API_URL: process.env.RABBITX_API_URL,
+  DB_URL: process.env.DB_URL,
 };
