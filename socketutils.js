@@ -1,4 +1,4 @@
-const { commonOnFive } = require("./constant/assets");
+const { assets } = require("./constant/assets");
 const {
   spreadPercentageCalculator,
   calculateHighest,
@@ -11,7 +11,6 @@ let driftLastDataObjs = {};
 let vertexLastDataObjs = {};
 let rabbitXLastDataObjs = {};
 const compareAndSendResponse = (obj, wsCopy) => {
-
   // const aevoTimestamp = Math.floor(aevoData?.time / 1000000);
   // const hyperlinkTimestamp = hyperlinkData?.time;
   // const driftTimeStamp = wsDriftLastData?.time;
@@ -29,10 +28,9 @@ const compareAndSendResponse = (obj, wsCopy) => {
   sendResponse(wsCopy);
 };
 const sendResponse = (wsCopy) => {
-
   const arrayToSend = [];
 
-  commonOnFive.map((symbol, i) => {
+  assets.commonOnFive.map((symbol, i) => {
     const arryToCal = [];
     if (aevoLastDataObjs[symbol] !== undefined) {
       arryToCal.push(aevoLastDataObjs[symbol]);

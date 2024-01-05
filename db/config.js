@@ -3,7 +3,7 @@ const { DB_URL } = require("../config/index");
 const connectToDatabase = async () => {
   try {
     const db = await mongoose.connect(DB_URL);
-    console.log("Connected to MongoDB Atlas", db);
+    console.log("Connected to MongoDB Atlas");
     return db;
   } catch (error) {
     console.error("Error connecting to MongoDB Atlas:", error);

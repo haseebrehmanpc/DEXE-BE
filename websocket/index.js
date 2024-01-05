@@ -1,13 +1,5 @@
 const { WebSocketServer } = require("ws");
-const {
-  commonOnFive,
-  isAssetsExist,
-  hyperLiquidAssets,
-  aevoAssets,
-  driftPrepAsset,
-  vertexSymbols,
-  rabbitxSymbol,
-} = require("../constant/assets");
+const { isAssetsExist, assets } = require("../constant/assets");
 const { wsHyperlink } = require("./HyperLiquid");
 const { hyperListner } = require("./HyperLiquid/listener");
 const { wsAevo } = require("./Aevo");
@@ -45,8 +37,8 @@ const createWebsocketServer = (server) => {
       hyperListner(ws);
       rabbitxListener(ws);
       vertexListener(ws);
-      commonOnFive.map((symbol) => {
-        if (isAssetsExist(hyperLiquidAssets, symbol)) {
+      assets?.commonOnFive?.map((symbol) => {
+        if (isAssetsExist(assets?.hyperLiquidAssets, symbol)) {
           const event = {
             method: "subscribe",
             subscription: { type: "l2Book", coin: symbol },
@@ -54,7 +46,7 @@ const createWebsocketServer = (server) => {
           wsHyperlink.send(JSON.stringify(event));
           // appendSubscribedEvents(1, { site: "hyper", event });
         }
-        if (isAssetsExist(aevoAssets, symbol)) {
+        if (isAssetsExist(assets?.aevoAssets, symbol)) {
           const event = {
             op: "subscribe",
             data: [`ticker:${symbol}:PERPETUAL`],
@@ -63,7 +55,7 @@ const createWebsocketServer = (server) => {
           // appendSubscribedEvents(1, { site: "aevo", event });
         }
 
-        if (isAssetsExist(driftPrepAsset, symbol)) {
+        if (isAssetsExist(assets?.driftPrepAsset, symbol)) {
           const event = {
             type: "subscribe",
             marketType: "perp",
@@ -73,8 +65,7 @@ const createWebsocketServer = (server) => {
           wsDrift.send(JSON.stringify(event));
           // appendSubscribedEvents(1, { site: "drift", event });
         }
-        if (isAssetsExist(vertexSymbols, symbol)) {
-
+        if (isAssetsExist(assets?.vertexSymbols, symbol)) {
           const pid = findVertexIdBySymbol(symbol);
           if (!pid) return;
           const event = {
@@ -88,7 +79,7 @@ const createWebsocketServer = (server) => {
           wsVertex.send(JSON.stringify(event));
           // appendSubscribedEvents(1, { site: "Vertex", event });
         }
-        if (isAssetsExist(rabbitxSymbol, symbol)) {
+        if (isAssetsExist(assets?.rabbitxSymbol, symbol)) {
           const event = {
             subscribe: { channel: `market:${symbol}-USD`, name: "js" },
             id: 1,

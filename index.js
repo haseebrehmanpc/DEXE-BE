@@ -4,7 +4,8 @@ const { createWebsocketServer } = require("./websocket");
 const app = express();
 app.use(cors());
 const runCronJob = require("./cronJob");
-
+const { fetchAssets } = require("./constant/assets");
+fetchAssets();
 require("./db/config");
 // Run the cron job
 runCronJob();

@@ -1,4 +1,4 @@
-const { vertexAsset } = require("./constant/assets");
+const { assets } = require("./constant/assets");
 const calculateHyperLinkLeverage = (jsonData) => {
   const levels = jsonData?.data?.levels;
   if (!levels?.length)
@@ -89,10 +89,12 @@ const generateUnixTimeWithSameLength = (length) => {
 };
 
 const findVertexSymbolById = (num) => {
-  return vertexAsset.find(({ product_id }) => product_id === num)?.symbol;
+  return assets?.vertexAsset.find(({ product_id }) => product_id === num)
+    ?.symbol;
 };
 const findVertexIdBySymbol = (currSymbol) => {
-  return vertexAsset.find(({ symbol }) => symbol === currSymbol)?.product_id;
+  return assets?.vertexAsset.find(({ symbol }) => symbol === currSymbol)
+    ?.product_id;
 };
 
 async function findCommonSymbol(...arrays) {
@@ -125,5 +127,5 @@ module.exports = {
   generateUnixTimeWithSameLength,
   findVertexIdBySymbol,
   findVertexSymbolById,
-  findCommonSymbol
+  findCommonSymbol,
 };
