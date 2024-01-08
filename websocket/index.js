@@ -35,8 +35,8 @@ const createWebsocketServer = (server) => {
       aevoListener(ws);
       driftListener(ws);
       hyperListner(ws);
-      rabbitxListener(ws);
       vertexListener(ws);
+      rabbitxListener(ws);
       assets?.commonOnFive?.map((symbol) => {
         if (isAssetsExist(assets?.hyperLiquidAssets, symbol)) {
           const event = {
